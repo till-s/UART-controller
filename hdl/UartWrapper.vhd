@@ -63,9 +63,9 @@ entity UartWrapper is
       -- send break
       txBreak        : in  std_logic := '0';
       -- expected data format (parity, stop bits etc.)
-      cfgParity      : in  UartParityType;
-      cfgStopBits    : in  UartStopBitType;
-      cfgNumBits     : in  natural range 1 to DATA_WIDTH_G;
+      cfgParity      : in  UartParityType                   := NONE;
+      cfgStopBits    : in  UartStopBitType                  := ONE;
+      cfgNumBits     : in  natural range 1 to DATA_WIDTH_G  := DATA_WIDTH_G;
       cfgBitRateHz   : in  unsigned(LD_RATE_G - 1 downto 0) := to_unsigned(9600, LD_RATE_G);
       -- clear errors; may be permanently asserted which causes all
       -- error flags to be asserted for a single cycle.
