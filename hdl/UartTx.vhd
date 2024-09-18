@@ -54,7 +54,7 @@ architecture rtl of UartTx is
    type RegType is record
       state     : StateType;
       rdy       : std_logic;
-      shftReg   : std_logic_vector(DATA_WIDTH_G - 1 downto -1);
+      shftReg   : std_logic_vector(DATA_WIDTH_G downto 0);
       parity    : std_logic;
       -- max. count is DATA_WIDTH_G + 1 (including start bit);
       -- however, the count is -1 based, so subtract 2
@@ -114,7 +114,7 @@ begin
             v.rdy   := '0';
          elsif ( dataVld = '1' ) then
             v.shftReg := data & '0'; -- start bit
-            v.shftReg(r.shftReg'left downto numBits) := (others => '1');
+            v.shftReg(r.shftReg'left downto numBits + 1) := (others => '1');
             v.rdy     := '0';
             v.state   := SHIFT_DATA;
             -- must include start bit 
