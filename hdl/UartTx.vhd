@@ -87,15 +87,19 @@ begin
          case (r.state) is
             when SHIFT_DATA =>
                -- use *next* data bit
-               v.parity := r.parity xor r.shftReg(r.shftReg'right + 1);
+               if ( parity = EVEN or parity = ODD ) then
+                  v.parity := r.parity xor r.shftReg(r.shftReg'right + 1);
+               else
+                  -- leave it at '0'
+               end if;
                if ( r.count < 0 ) then
                   v.count := to_signed( tailLength( parity, stopBits ) - 2, v.count'length);
                   v.state := SHIFT_TAIL;
-                  if ( parity = SPACE ) then
-                     v.shftReg(v.shftReg'right) := '0';
-                  elsif ( parity = EVEN ) then
+                  if ( parity = EVEN or parity = SPACE ) then
                      v.shftReg(v.shftReg'right) := r.parity;
-                  elsif ( parity = ODD  ) then
+                  else
+                     -- includes the 'MARK' and 'NONE' case which
+                     -- require a '1' to be shifted out.
                      v.shftReg(v.shftReg'right) := not r.parity;
                   end if;
                end if;
