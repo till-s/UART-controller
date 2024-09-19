@@ -100,6 +100,7 @@ begin
                   end if;
                end if;
             when SHIFT_TAIL =>
+               v.shftReg  := (others => '1');
                if ( r.count < 0 ) then
                   v.state := IDLE;
                   v.rdy   := '1';
@@ -114,7 +115,6 @@ begin
             v.rdy   := '0';
          elsif ( dataVld = '1' ) then
             v.shftReg := data & '0'; -- start bit
-            v.shftReg(r.shftReg'left downto numBits + 1) := (others => '1');
             v.rdy     := '0';
             v.state   := SHIFT_DATA;
             -- must include start bit 
