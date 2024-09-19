@@ -1,6 +1,7 @@
 GHDL=ghdl
 
-GHDL_E_FLAGS=-Wl,-no-pie
+GHDL_A_FLAGS=-g
+GHDL_E_FLAGS=-g -Wl,-no-pie
 
 TESTS=UartTb LongDividerTb
 
