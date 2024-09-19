@@ -71,7 +71,12 @@ architecture rtl of UartRx is
    constant MAX_CNT_C : natural := max( DEBOUNCE_G, DATA_WIDTH_G );
 
    -- -1 based count + extra bit for sign
-   subtype CountType is signed(uartNumBits(MAX_CNT_C - 2) downto 0);
+   subtype CountType is signed(uartNumBits(MAX_CNT_C) downto 0);
+
+   function toCount(constant x : in integer) return CountType is
+   begin
+      return CountType(to_signed(x - 2, CountType'length));
+   end function toCount;
 
    type StateType is ( PREP, IDLE, START_BIT, SHIFT_DATA, PARITY_BIT, STOP1_BIT, STOP2_BIT, WAIT_EOF );
 
@@ -93,7 +98,7 @@ architecture rtl of UartRx is
    constant REG_INIT_C : RegType := (
       state     => PREP,
       shftReg   => (others => '0'),
-      count     => to_signed( DEBOUNCE_G - 2, CountType'length ),
+      count     => toCount( DEBOUNCE_G ),
       sync      => '1',
       break     => '0',
       maybeBrk  => '0',
@@ -139,7 +144,7 @@ begin
             when START_BIT  =>
                v.maybeBrk   := '1';
                v.parity     := '0';
-               v.count      := to_signed(numBits - 2, v.count'length);
+               v.count      := toCount( numBits );
                v.state      := SHIFT_DATA;
                v.parityErr  := '0';
                v.framingErr := '0';
@@ -180,8 +185,8 @@ begin
                   v.state      := WAIT_EOF;
                   v.break      := r.maybeBrk;
                   -- approximate count to signal break;
-                  v.breakCnt   := to_signed(numBits, v.breakCnt'length);
-                  v.count      := to_signed(DEBOUNCE_G - 2, v.count'length);
+                  v.breakCnt   := to_signed( numBits, v.breakCnt'length );
+                  v.count      := toCount( DEBOUNCE_G );
                else
                   if ( stopBits = TWO and r.state /= STOP2_BIT ) then
                      -- treat 1.5 as one
@@ -202,7 +207,7 @@ begin
       if ( r.state = PREP ) then
          v.sync  := '1';
          v.break := '0';
-         v.count := to_signed(DEBOUNCE_G - 2, v.count'length);
+         v.count := toCount( DEBOUNCE_G );
          v.state := IDLE;
       elsif ( r.state = IDLE ) then
          if ( serialRx = '0' ) then
@@ -212,11 +217,11 @@ begin
                v.state := START_BIT;
             end if;
          else
-            v.count := to_signed(DEBOUNCE_G - 2, v.count'length);
+            v.count := toCount( DEBOUNCE_G );
          end if;
       elsif ( r.state = WAIT_EOF ) then
          if ( serialRx = '0' ) then
-            v.count := to_signed(DEBOUNCE_G - 2, v.count'length);
+            v.count := toCount( DEBOUNCE_G );
          else
             v.count := r.count - 1;
             -- require serialRx to be '1' in addition to the
